@@ -25,6 +25,9 @@ import requests
 from categories import CATEGORIES, NAME2CATEGORY
 
 
+this_dir = os.path.dirname(os.path.abspath(__file__))
+
+
 # %% Download index from Google
 
 # Obtain the API key, either from the environ or a CLI arg.
@@ -112,23 +115,27 @@ else:
     print("Selected fonts match our categorized fonts.")
 
 
+# %% Establish filenames
+
+for family, item in default_noto_fonts.items():
+    download_url = item["files"]["regular"]
+    ext = download_url.split(".")[-1]
+    item["fname"] = "".join(x.capitalize() for x in family.split()) + "-Regular." + ext
+
+
 # %% Download font files
 
 
 # Prep download
-fonts_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")
+fonts_dir = os.path.join(this_dir, "fonts")
 shutil.rmtree(fonts_dir, ignore_errors=True)
 os.mkdir(fonts_dir)
 
 # Download all 150-160 fonts, close to 50 MB
 print(f"\rDownloading ...", end="")
-count = 0
-for family, item in default_noto_fonts.items():
-    download_url = item["files"]["regular"]
-    ext = download_url.split(".")[-1]
-    fname = "".join(x.capitalize() for x in family.split()) + "-Regular." + ext
-    count += 1
-    print(f"\rDownloading {count}/{len(default_noto_fonts)}: {fname}", end="")
+for i, (family, item) in enumerate(default_noto_fonts.items()):
+    download_url, fname = item["files"]["regular"], item["fname"]
+    print(f"\rDownloading {i}/{len(default_noto_fonts)}: {fname}", end="")
     r = requests.get(download_url)
     assert r.ok
     blob = r.content
@@ -136,4 +143,24 @@ for family, item in default_noto_fonts.items():
         f.write(blob)
     time.sleep(0.01)
 
-print(f"\rDownloaded {count} fonts.")
+print(f"\rDownloaded {len(default_noto_fonts)} fonts.")
+
+
+# %% Make an index page
+
+base_url = "https://raw.githubusercontent.com/pygfx/noto-mirror/main/fonts/"
+
+md = "# Font index\n"
+
+for category, families in CATEGORIES.items():
+    md += f"\n## {category}\n\n"
+    for family in families:
+        item = default_noto_fonts[family]
+        fname = item["fname"]
+        url = base_url + fname
+        md += f"* [{family}]({url})\n"
+
+md += "\n"
+
+with open(os.path.join(this_dir, "index.md"), "wb") as f:
+    f.write(md.encode())
