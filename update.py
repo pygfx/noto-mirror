@@ -37,6 +37,7 @@ fonts_dir = os.path.join(this_dir, "fonts")
 api_key1 = os.getenv("GOOGLE_FONTS_API_KEY", "")
 api_key2 = sys.argv[1] if len(sys.argv) == 2 else ""
 api_key = api_key1 or api_key2
+assert api_key, "Need Google API key!"
 
 # Download font list
 url = f"https://www.googleapis.com/webfonts/v1/webfonts?key={api_key}"
@@ -84,7 +85,12 @@ for family in list(default_noto_fonts.keys()):
             default_noto_fonts.pop(family)
             print("Drop alt font:", family)
 
-EXCLUDES = {"Noto Color Emoji", "Noto Serif", "Noto Sans Mono", "Noto Sans Display"}
+EXCLUDES = {
+    "Noto Color Emoji",
+    "Noto Serif",
+    "Noto Sans Mono",
+    "Noto Sans Display",
+}
 
 # Remove specific fonts
 for family in EXCLUDES:
@@ -102,20 +108,22 @@ missing = set(EXPECTED_FONTS).difference(default_noto_fonts)
 
 if unexpected:
     print()
-    print("The following fonts are selected, but not categorized. We should either")
-    print("add them to the categories-list, or exclude them from the selection.")
+    print("The following fonts are selected, but not categorized.")
+    print("We should either add them to the categories-list,")
+    print("or exclude them from the selection.")
     print(unexpected)
 
 if missing:
     print()
-    print("The following fonts are categorized but not selected. We should either")
-    print("remove them from the categories-list or check if our selection is broken.")
+    print("The following fonts are categorized but not selected.")
+    print("We should either remove them from the categories-list,")
+    print("or check if our selection is broken.")
     print(missing)
 
 if unexpected or missing:
     raise RuntimeError("Cannot proceed")
 else:
-    print("Selected fonts match our categorized fonts.")
+    print("Selected fonts match expected fonts.")
 
 
 # %% Establish filenames
@@ -123,7 +131,9 @@ else:
 for family, item in default_noto_fonts.items():
     download_url = item["files"]["regular"]
     ext = download_url.split(".")[-1]
-    item["fname"] = "".join(x.capitalize() for x in family.split()) + "-Regular." + ext
+    parts = [x.capitalize() for x in family.split()]
+    parts += ["-Regular", ".", ext]
+    item["fname"] = "".join(parts)
 
 
 # %% Download font files
@@ -134,7 +144,7 @@ shutil.rmtree(fonts_dir, ignore_errors=True)
 os.mkdir(fonts_dir)
 
 # Download all default fonts
-print(f"\rDownloading ...", end="")
+print("\rDownloading ...", end="")
 for i, (family, item) in enumerate(default_noto_fonts.items()):
     download_url, fname = item["files"]["regular"], item["fname"]
     print(f"\rDownloading {i}/{len(default_noto_fonts)}: {fname}", end="")
@@ -199,7 +209,7 @@ for category, families in FONTS_PER_CATEGORY.items():
         size = int(os.path.getsize(filename) / 2**10)  # in kb
         size_s = f"{size/1000:0.3f} MB" if size > 1000 else f"{size} KB"
         url = base_url + fname
-        html += f"  <li id='{fname}'> <a class='anchorlink' href='#{fname}'>#</a>"
+        html += f"<li id='{fname}'><a class='anchorlink' href='#{fname}'>#</a>"
         html += f"{family}: <a href='{url}'>Regular</a> ({size_s})</li>\n"
     html += "</ul>\n"
 
@@ -248,10 +258,11 @@ with open(filename, "wt", encoding="utf-8") as f:
     json.dump(noto_default_index, f)
 
 
-## Write stats
+# %% Write stats
 
 # Get memory consumption
-total_size = sum(os.path.getsize(os.path.join(fonts_dir, fname)) for fname in os.listdir(fonts_dir))
+getsize = lambda fname: os.path.getsize(os.path.join(fonts_dir, fname))  # noqa
+total_size = sum(getsize(fname) for fname in os.listdir(fonts_dir))
 total_size_mb = total_size / 2**20
 
 md = f"""# Noto mirror stats
@@ -266,5 +277,3 @@ md = f"""# Noto mirror stats
 filename = os.path.join(this_dir, "info", "stats.md")
 with open(filename, "wb") as f:
     f.write(md.encode())
-
-
