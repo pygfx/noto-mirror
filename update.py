@@ -21,11 +21,13 @@ import time
 import shutil
 
 import requests
+import freetype
 
 from categories import CATEGORIES, NAME2CATEGORY
 
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
+fonts_dir = os.path.join(this_dir, "fonts")
 
 
 # %% Download index from Google
@@ -127,11 +129,10 @@ for family, item in default_noto_fonts.items():
 
 
 # Prep download
-fonts_dir = os.path.join(this_dir, "fonts")
 shutil.rmtree(fonts_dir, ignore_errors=True)
 os.mkdir(fonts_dir)
 
-# Download all 150-160 fonts, close to 50 MB
+# Download all default fonts
 print(f"\rDownloading ...", end="")
 for i, (family, item) in enumerate(default_noto_fonts.items()):
     download_url, fname = item["files"]["regular"], item["fname"]
@@ -145,22 +146,62 @@ for i, (family, item) in enumerate(default_noto_fonts.items()):
 
 print(f"\rDownloaded {len(default_noto_fonts)} fonts.")
 
-
 # %% Make an index page
 
 base_url = "https://raw.githubusercontent.com/pygfx/noto-mirror/main/fonts/"
+base_url = "https://pygfx.github.io/noto-mirror/fonts/"
 
-md = "# Font index\n"
+html = """<!DOCTYPE html>
+<html>
+<head>
+    <title>Noto font mirror</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<style>
+body {
+    color: #000;
+    font-family: Ubuntu,"Helvetica Neue",Arial,sans-serif;
+}
+a:link, a:visited, a:active {
+    color: #36C;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+a.anchorlink {
+    color: #555;
+    margin-right: 7px;
+}
+a.anchorlink:hover {
+    text-decoration: none;
+}
+li:target { background: #dfd; }
+</style>
+
+<body>
+
+<h1>Noto font mirror</h1>
+"""
 
 for category, families in CATEGORIES.items():
-    md += f"\n## {category}\n\n"
-    for family in families:
+    html += f"\n<h2 id='{category}'>{category}</h2>\n\n"
+    html += "<ul>\n"
+    for family in sorted(families):
         item = default_noto_fonts[family]
         fname = item["fname"]
+        filename = os.path.join(fonts_dir, fname)
+        size = int(os.path.getsize(filename) / 2**10)  # in kb
+        size_s = f"{size/1000:0.3f} MB" if size > 1000 else f"{size} KB"
         url = base_url + fname
-        md += f"* [{family}]({url})\n"
+        html += f"  <li id='{fname}'> <a class='anchorlink' href='#{fname}'>#</a>"
+        html += f"{family}: <a href='{url}'>Regular</a> ({size_s})</li>\n"
+    html += "</ul>\n"
 
-md += "\n"
+html += "\n</body>/n</html>\n\n"
 
-with open(os.path.join(this_dir, "index.md"), "wb") as f:
-    f.write(md.encode())
+
+with open(os.path.join(this_dir, "index.html"), "wb") as f:
+    f.write(html.encode())
