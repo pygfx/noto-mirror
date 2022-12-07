@@ -132,7 +132,7 @@ for family, item in default_noto_fonts.items():
     r = requests.get(download_url)
     assert r.ok
     blob = r.content
-    with open(fonts_dir + fname, "wb") as f:
+    with open(os.path.join(fonts_dir, fname), "wb") as f:
         f.write(blob)
     time.sleep(0.01)
 
