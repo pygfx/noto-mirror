@@ -17,13 +17,14 @@ https://developers.google.com/fonts
 
 import os
 import sys
+import json
 import time
 import shutil
 
 import requests
 import freetype
 
-from categories import CATEGORIES, NAME2CATEGORY
+from categories import FONTS_PER_CATEGORY, EXPECTED_FONTS
 
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
@@ -94,8 +95,8 @@ print(f"Dropped {len(EXCLUDES)} more fonts")
 # %% Compare with our list
 
 # Compare the selected fonts with our expectation
-unexpected = set(default_noto_fonts).difference(NAME2CATEGORY)
-missing = set(NAME2CATEGORY).difference(default_noto_fonts)
+unexpected = set(default_noto_fonts).difference(EXPECTED_FONTS)
+missing = set(EXPECTED_FONTS).difference(default_noto_fonts)
 
 # Report ...
 
@@ -146,9 +147,11 @@ for i, (family, item) in enumerate(default_noto_fonts.items()):
 
 print(f"\rDownloaded {len(default_noto_fonts)} fonts.")
 
-# %% Make an index page
 
-base_url = "https://raw.githubusercontent.com/pygfx/noto-mirror/main/fonts/"
+# %% Make the web page
+
+
+# base_url = "https://raw.githubusercontent.com/pygfx/noto-mirror/main/fonts/"
 base_url = "https://pygfx.github.io/noto-mirror/fonts/"
 
 html = """<!DOCTYPE html>
@@ -186,7 +189,7 @@ li:target { background: #dfd; }
 <h1>Noto font mirror</h1>
 """
 
-for category, families in CATEGORIES.items():
+for category, families in FONTS_PER_CATEGORY.items():
     html += f"\n<h2 id='{category}'>{category}</h2>\n\n"
     html += "<ul>\n"
     for family in sorted(families):
@@ -205,3 +208,63 @@ html += "\n</body>/n</html>\n\n"
 
 with open(os.path.join(this_dir, "index.html"), "wb") as f:
     f.write(html.encode())
+
+
+# %% Create the index
+
+assert EXPECTED_FONTS[0] == "Noto Sans"
+
+# Prepare data structure
+noto_default_index = {
+    "fonts": [],
+    "index": {},
+}
+
+# Get codepoints of the main font
+fname = default_noto_fonts["Noto Sans"]["fname"]
+face = freetype.Face(os.path.join(fonts_dir, fname))
+main_codepoints = set(i for i, _ in face.get_chars())
+
+# Add them to the map
+for codepoint in main_codepoints:
+    noto_default_index["index"][codepoint] = [0]
+
+# Now add the codepoints of the other fonts. For codepoints that
+# are covered by the main font, we only register the main font.
+# In all other cases we list all fonts that support a codepoint.
+for font_index, family in enumerate(EXPECTED_FONTS):
+    fname = default_noto_fonts[family]["fname"]
+    face = freetype.Face(os.path.join(fonts_dir, fname))
+    noto_default_index["fonts"].append(fname)
+    codepoints = set(i for i, _ in face.get_chars())
+    for codepoint in codepoints:
+        if codepoint not in main_codepoints:
+            x = noto_default_index["index"].setdefault(codepoint, [])
+            x.append(font_index)
+
+# Write index to disk
+filename = os.path.join(this_dir, "info", "noto_default_index.json")
+with open(filename, "wt", encoding="utf-8") as f:
+    json.dump(noto_default_index, f)
+
+
+## Write stats
+
+# Get memory consumption
+total_size = sum(os.path.getsize(os.path.join(fonts_dir, fname)) for fname in os.listdir(fonts_dir))
+total_size_mb = total_size / 2**20
+
+md = f"""# Noto mirror stats
+
+* Number of fonts in the default set: {len(EXPECTED_FONTS)}
+* Memory consumption: {total_size_mb:0.1f} MB
+* Unicode code points: {len(noto_default_index['index'])}
+
+"""
+
+# Write stats to disk
+filename = os.path.join(this_dir, "info", "stats.md")
+with open(filename, "wb") as f:
+    f.write(md.encode())
+
+

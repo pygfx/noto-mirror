@@ -1,4 +1,10 @@
-CATEGORIES = {
+"""
+This is a categorized list of the fonts in the Noto default set. This
+set matches the fonts selected from Google Fonts (if not, either this
+list or the selection mechanism needs an update).
+"""
+
+FONTS_PER_CATEGORY = {
     "Main": [
         "Noto Sans",
     ],
@@ -178,9 +184,13 @@ CATEGORIES = {
 }
 
 
-# Create reverse dict
-NAME2CATEGORY = {}
-for category, names in CATEGORIES.items():
+# Sort the names, but keep order of categories intact
+for category, names in FONTS_PER_CATEGORY.items():
+    names.sort()
+
+# Create flat list
+EXPECTED_FONTS = []
+for category, names in FONTS_PER_CATEGORY.items():
     for name in names:
-        assert name not in NAME2CATEGORY, f"Duplicate found: {name}"
-        NAME2CATEGORY[name] = category
+        assert name not in EXPECTED_FONTS, f"Duplicate found: {name}"
+        EXPECTED_FONTS.append(name)
