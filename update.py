@@ -161,44 +161,9 @@ print(f"\rDownloaded {len(default_noto_fonts)} fonts.")
 # %% Make the web page
 
 
-# base_url = "https://raw.githubusercontent.com/pygfx/noto-mirror/main/fonts/"
-base_url = "https://pygfx.github.io/noto-mirror/fonts/"
+base_url = "https://raw.githubusercontent.com/pygfx/noto-mirror/main/fonts/"
 
-html = """<!DOCTYPE html>
-<html>
-<head>
-    <title>Noto font mirror</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-
-<style>
-body {
-    color: #000;
-    font-family: Ubuntu,"Helvetica Neue",Arial,sans-serif;
-}
-a:link, a:visited, a:active {
-    color: #36C;
-    text-decoration: none;
-}
-a:hover {
-    text-decoration: underline;
-}
-a.anchorlink {
-    color: #555;
-    margin-right: 7px;
-}
-a.anchorlink:hover {
-    text-decoration: none;
-}
-li:target { background: #dfd; }
-</style>
-
-<body>
-
-<h1>Noto font mirror</h1>
-"""
-
+html = ""
 for category, families in FONTS_PER_CATEGORY.items():
     html += f"\n<h2 id='{category}'>{category}</h2>\n\n"
     html += "<ul>\n"
@@ -213,11 +178,13 @@ for category, families in FONTS_PER_CATEGORY.items():
         html += f"{family}: <a href='{url}'>Regular</a> ({size_s})</li>\n"
     html += "</ul>\n"
 
-html += "\n</body>/n</html>\n\n"
 
-
-with open(os.path.join(this_dir, "index.html"), "wb") as f:
-    f.write(html.encode())
+# Write to the index.html, using a template
+with open(os.path.join(this_dir, "docs", "template.html"), "rb") as f:
+    page =f.read().decode()
+page.replace("CONTENT", html)
+with open(os.path.join(this_dir, "docs", "index.html"), "wb") as f:
+    f.write(page.encode())
 
 
 # %% Create the index

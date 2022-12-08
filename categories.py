@@ -124,6 +124,7 @@ FONTS_PER_CATEGORY = {
         "Noto Sans Duployan",
         "Noto Sans Mayan Numerals",
         "Noto Serif Nyiakeng Puachue Hmong",
+        "Noto Serif NP Hmong",
     ],
     "Ancient Africa and Middle East": [
         "Noto Sans Bamum",
