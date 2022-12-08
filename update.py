@@ -182,7 +182,7 @@ for category, families in FONTS_PER_CATEGORY.items():
 # Write to the index.html, using a template
 with open(os.path.join(this_dir, "docs", "template.html"), "rb") as f:
     page =f.read().decode()
-page.replace("CONTENT", html)
+page = page.replace("CONTENT", html)
 with open(os.path.join(this_dir, "docs", "index.html"), "wb") as f:
     f.write(page.encode())
 
