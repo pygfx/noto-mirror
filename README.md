@@ -17,7 +17,7 @@ Mirror a selection of Noto fonts to support full Unicode support in PyGfx.
 ## Maintenance
 
 * Run ``python update fonts`` to download a subset of the Noto font collection to the ``fonts`` folder.
-    * You need a Google API key.
-    * You may need to update [update_fonts.py](update/update_fonts.py) or [categories.py](update/categories.py).
+    * You need to set `GOOGLE_FONTS_API_KEY`.
+    * If fonts have been added/removed/renamed upstream, you'll need to update [update_fonts.py](update/update_fonts.py) or [categories.py](update/categories.py).
 * Run ``python update docs`` to update the web page in the ``docs`` folder (which is the source for GH pages).
 * Run ``python update meta`` to update the meta data (index and stats) in the ``meta`` folder.
