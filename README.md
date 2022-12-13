@@ -9,9 +9,9 @@ Mirror a selection of Noto fonts to support full Unicode support in PyGfx.
 * The web page lists fonts per category, which are defined in [categories.py](update/categories.py).
 * The [meta/stats.md](meta/stats.md) shows statistics about the current fonts.
 * The [meta/noto_default_index.json](meta/noto_default_index.json) is an index:
-    * It specifies what fonts can render a specific code point.
-    * It has a field "fonts" that is a list of all default fonts file names.
-    * It has a field "index" that maps code points to a list of indices in the fonts list.
+    * It has a field "families" that is a list of all default fonts families.
+    * It has a field "filenames" that is a list of the matching filenames.
+    * It has a field "index" that maps Unicode code points to a list of ints. These ints are indices in the above lists.
 
 
 ## Maintenance

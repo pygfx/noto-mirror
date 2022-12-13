@@ -16,6 +16,7 @@ https://developers.google.com/fonts
 # %% Init
 
 import os
+import sys
 import time
 import shutil
 
@@ -32,7 +33,7 @@ fonts_dir = os.path.join(this_dir, "fonts")
 
 # Obtain the API key, either from the environ or a CLI arg.
 api_key = os.getenv("GOOGLE_FONTS_API_KEY", "")
-assert api_key, "You need to set the GOOGLE_FONTS_API_KEY environment variable."
+assert api_key, "You need to set the GOOGLE_FONTS_API_KEY env variable."
 
 # Download font list
 url = f"https://www.googleapis.com/webfonts/v1/webfonts?key={api_key}"

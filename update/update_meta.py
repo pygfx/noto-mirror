@@ -32,7 +32,8 @@ assert EXPECTED_FONTS[0] == "Noto Sans"
 
 # Prepare data structure
 noto_default_index = {
-    "fonts": [],
+    "families": [],
+    "filenames": [],
     "index": {},
 }
 
@@ -50,8 +51,9 @@ for codepoint in main_codepoints:
 # In all other cases we list all fonts that support a codepoint.
 for font_index, family in enumerate(EXPECTED_FONTS):
     fname = filemap[family.replace(" ", "")]
+    noto_default_index["families"].append(family)
+    noto_default_index["filenames"].append(fname)
     face = freetype.Face(os.path.join(fonts_dir, fname))
-    noto_default_index["fonts"].append(fname)
     codepoints = set(i for i, _ in face.get_chars())
     for codepoint in codepoints:
         if codepoint not in main_codepoints:
