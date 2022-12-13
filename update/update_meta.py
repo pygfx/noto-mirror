@@ -65,6 +65,8 @@ filename = os.path.join(this_dir, "meta", "noto_default_index.json")
 with open(filename, "wt", encoding="utf-8") as f:
     json.dump(noto_default_index, f, indent=0)
 
+print("Generated index (meta/noto_default_index.json)")
+
 
 # %% Write stats
 
@@ -85,3 +87,5 @@ md = f"""# Noto mirror stats
 filename = os.path.join(this_dir, "meta", "stats.md")
 with open(filename, "wb") as f:
     f.write(md.encode())
+
+print("Generated stats (meta/stats.md)")

@@ -47,3 +47,5 @@ with open(os.path.join(this_dir, "docs", "template.html"), "rb") as f:
 page = page.replace("CONTENT", html)
 with open(os.path.join(this_dir, "docs", "index.html"), "wb") as f:
     f.write(page.encode())
+
+print("Generated web page to list fonts (docs/index.html).")
